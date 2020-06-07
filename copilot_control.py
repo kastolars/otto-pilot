@@ -6,18 +6,18 @@ from pynput import mouse, keyboard
 
 logging.basicConfig(level=logging.INFO)
 
-BUTTON_MAPPING = {
-    "Button.unknown": mouse.Button.unknown,
-    "Button.left": mouse.Button.left,
-    "Button.middle": mouse.Button.middle,
-    "Button.right": mouse.Button.right,
-}
-
-
 class Pilot:
 
     def __init__(self, events):
         self.events = events
+        for event in self.events:
+            if event.button is not None:
+                event.button = mouse.Button(event.button)
+            if event.key is not None:
+                event.key = event.key.replace('\'', '')
+                event.key = event.key.replace('Key.','')
+                if event.key in keyboard.Key.__dict__:
+                    event.key = keyboard.Key.__dict__[event.key]
 
     def run(self):
 
@@ -37,20 +37,19 @@ class Pilot:
                 if event.key is None:
                     mouse_controller.position = (event.x, event.y)
                     if event.pressed:
-                        mouse_controller.click(BUTTON_MAPPING[event.button])
+                        mouse_controller.click(event.button)
                         logging.info(
                             f'{event.button} pressed at {event.x},{event.y}.')
                     else:
-                        mouse_controller.release(BUTTON_MAPPING[event.button])
+                        mouse_controller.release(event.button)
                         logging.info(
                             f'{event.button} released at {event.x},{event.y}.')
                 else:
                     if event.pressed:
-                        keyboard_controller.press(event.key.replace('\'', ''))
+                        keyboard_controller.press(event.key)
                         logging.info(f'{event.key} key pressed')
                     else:
-                        keyboard_controller.release(
-                            event.key.replace('\'', ''))
+                        keyboard_controller.release(event.key)
                         logging.info(f'{event.key} key released')
                 last_timestamp = event.timestamp
         except KeyboardInterrupt:
@@ -59,21 +58,11 @@ class Pilot:
 
 
 if __name__ == "__main__":
-    # with open("events.json", "r") as f:
+    with open("events.json", "r") as f:
 
-    #     events = Event.schema().load(json.load(f), many=True)
+        events = Event.schema().load(json.load(f), many=True)
 
-    # p = Pilot(events)
-    # p.run()
+        p = Pilot(events)
 
-    # for btn in mouse.Button.__members__.items():
-    #     print(btn)
-
-    print(repr(mouse.Button['unknown']))
-
-    print(keyboard.KeyCode['a'])
-
-    # for key in keyboard.Key.__members__.items():
-    #     name = key[0]
-    #     print(name)
-    #     print(keyboard.Key[name])
+        # print(events)
+        p.run()

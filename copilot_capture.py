@@ -4,6 +4,7 @@ from dataclasses import dataclass
 import logging
 from dataclasses_json import dataclass_json, LetterCase
 import threading
+from typing import Optional
 
 logging.basicConfig(level=logging.INFO)
 
@@ -13,24 +14,23 @@ logging.basicConfig(level=logging.INFO)
 class Event:
     timestamp: int
     pressed: bool
-    x: int = None
-    y: int = None
-    button: str = None
-    key: str = None
+    x: Optional[int] = None
+    y: Optional[int] = None
+    button: Optional[int] = None
+    key: Optional[str] = None
 
 
 class Capturer:
 
-    def __init__(self, fstore, esc_func=None):
+    def __init__(self, fstore):
         self.events = []
         self.fstore = fstore
-        if esc_func == None:
-            self.esc_fun = self._stop_esc
-        else:
-            self.esc_fun = esc_func
 
     def _on_click(self, x, y, button, pressed):
         timestamp = time.time()
+        action = 'pressed' if pressed else 'released'
+        logging.info(f'{button} {action} at {x},{y}.')
+        button = mouse.Button(button).value
         event = Event(
             timestamp,
             pressed,
@@ -39,8 +39,6 @@ class Capturer:
             button
         )
         self.events.append(event)
-        action = 'pressed' if pressed else 'released'
-        logging.info(f'{button} {action} at {x},{y}.')
 
     def _stop_listener(self):
         logging.info("Stop listener invoked")
@@ -68,10 +66,13 @@ class Capturer:
         logging.info(f'{key} key released')
         self._stop_esc(key)
 
+    def terminate(self):
+        self.mouse_listener.stop()
+        self.keyboard_listener.stop()
+
     def _stop_esc(self, key):
         if key == keyboard.Key.esc:
-            self.mouse_listener.stop()
-            self.keyboard_listener.stop()
+            self.terminate()
 
     def run(self):
         logging.info("Begin capture.")
@@ -84,10 +85,7 @@ class Capturer:
 
         logging.info("Terminating capture.")
 
-        print(self.events)
-
         events = Event.schema().dumps(self.events, many=True)
-        print(events)
         self.fstore(events)
 
 
