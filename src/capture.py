@@ -40,16 +40,6 @@ class Capturer:
         )
         self.events.append(event)
 
-    def _stop_listener(self):
-        logging.info("Stop listener invoked")
-        try:
-            while True:
-                pass
-        except KeyboardInterrupt:
-            logging.info("Keyboard interrupt detected.")
-            self.mouse_listener.stop()
-            return
-
     def _on_press(self, key):
         try:
             timestamp = time.time()
@@ -64,11 +54,16 @@ class Capturer:
         event = Event(timestamp=timestamp, pressed=False, key=key)
         self.events.append(event)
         logging.info(f'{key} key released')
-        self._stop_esc(key)
 
     def terminate(self):
+        # self.events = self.events[:len(self.events)-2]
         self.mouse_listener.stop()
         self.keyboard_listener.stop()
+
+        logging.info("Terminating capture.")
+
+        events = Event.schema().dumps(self.events, many=True)
+        self.fstore(events)
 
     def _stop_esc(self, key):
         if key == keyboard.Key.esc:
@@ -82,11 +77,6 @@ class Capturer:
         with self.mouse_listener, self.keyboard_listener:
             self.mouse_listener.join()
             self.keyboard_listener.join()
-
-        logging.info("Terminating capture.")
-
-        events = Event.schema().dumps(self.events, many=True)
-        self.fstore(events)
 
 
 def fstore(events):
