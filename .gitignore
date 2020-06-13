@@ -1,5 +1,5 @@
 
 .vscode/settings.json
-__pycache__/copilot_capture.cpython-38.pyc
+*__pycache__*
 *venv*
 *json*
