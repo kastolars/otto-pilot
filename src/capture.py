@@ -12,6 +12,9 @@ logging.basicConfig(level=logging.INFO)
 @dataclass_json(letter_case=LetterCase.CAMEL)
 @dataclass
 class Event:
+    """
+    Stores keyboard and mouse events
+    """
     timestamp: int
     pressed: bool
     x: Optional[int] = None
@@ -27,6 +30,9 @@ class Capturer:
         self.fstore = fstore
 
     def _on_click(self, x, y, button, pressed):
+        """
+        Records a mouse event
+        """
         timestamp = time.time()
         action = 'pressed' if pressed else 'released'
         logging.info(f'{button} {action} at {x},{y}.')
@@ -41,6 +47,9 @@ class Capturer:
         self.events.append(event)
 
     def _on_press(self, key):
+        """
+        Records a keyboard press-key event
+        """
         try:
             timestamp = time.time()
             event = Event(timestamp=timestamp, pressed=True, key=key)
@@ -50,12 +59,18 @@ class Capturer:
             logging.info(f'Attribute error raised by key {key}')
 
     def _on_release(self, key):
+        """
+        Records a keyboard 
+        """
         timestamp = time.time()
         event = Event(timestamp=timestamp, pressed=False, key=key)
         self.events.append(event)
         logging.info(f'{key} key released')
 
     def terminate(self):
+        """
+        Terminates the capture session
+        """
         # self.events = self.events[:len(self.events)-2]
         self.mouse_listener.stop()
         self.keyboard_listener.stop()
@@ -65,11 +80,10 @@ class Capturer:
         events = Event.schema().dumps(self.events, many=True)
         self.fstore(events)
 
-    def _stop_esc(self, key):
-        if key == keyboard.Key.esc:
-            self.terminate()
-
     def run(self):
+        """
+        Entrypoint for the capturer
+        """
         logging.info("Begin capture.")
         self.mouse_listener = mouse.Listener(on_click=self._on_click)
         self.keyboard_listener = keyboard.Listener(
@@ -77,12 +91,6 @@ class Capturer:
         with self.mouse_listener, self.keyboard_listener:
             self.mouse_listener.join()
             self.keyboard_listener.join()
-
-
-def fstore(events):
-    with open('events.json', 'w') as f:
-        f.write(events)
-        f.close()
 
 
 if __name__ == "__main__":

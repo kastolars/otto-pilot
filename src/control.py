@@ -7,7 +7,7 @@ from pynput import mouse, keyboard
 logging.basicConfig(level=logging.INFO)
 
 
-class Pilot:
+class Controller:
 
     def __init__(self, events):
         self.events = events
@@ -20,8 +20,10 @@ class Pilot:
                 if event.key in keyboard.Key.__dict__:
                     event.key = keyboard.Key.__dict__[event.key]
 
-    def run(self, iterations):
-
+    def run(self, iterations=1):
+        """
+        Entrypoint for the controller
+        """
         mouse_controller = mouse.Controller()
         keyboard_controller = keyboard.Controller()
 
@@ -65,6 +67,6 @@ if __name__ == "__main__":
 
         events = Event.schema().load(json.load(f), many=True)
 
-        p = Pilot(events)
+        c = Controller(events)
 
-        p.run()
+        c.run()
