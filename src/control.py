@@ -9,8 +9,9 @@ logging.basicConfig(level=logging.INFO)
 
 class Controller:
 
-    def __init__(self, events):
+    def __init__(self, events, terminate_callback):
         self.events = events
+        self.terminate_callback = terminate_callback
         for event in self.events:
             if event.button is not None:
                 event.button = mouse.Button(event.button)
@@ -60,6 +61,8 @@ class Controller:
         except KeyboardInterrupt:
             print("Terminating")
             return
+        finally:
+            self.terminate()
 
 
 if __name__ == "__main__":

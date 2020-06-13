@@ -71,7 +71,6 @@ class Capturer:
         """
         Terminates the capture session
         """
-        # self.events = self.events[:len(self.events)-2]
         self.mouse_listener.stop()
         self.keyboard_listener.stop()
 
@@ -91,6 +90,12 @@ class Capturer:
         with self.mouse_listener, self.keyboard_listener:
             self.mouse_listener.join()
             self.keyboard_listener.join()
+
+
+def fstore(events):
+    with open('events.json', 'w') as f:
+        f.write(events)
+        f.close()
 
 
 if __name__ == "__main__":

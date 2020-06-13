@@ -20,18 +20,17 @@ class Gui:
         Initialize capture/control toggles
         """
         self.is_capturing = False
-        # TODO: prevent pilot looping on capture button
         self.is_controlling = False
 
     def _capture(self):
         """
         Click handler for capture button
         """
-        if self.is_capturing:
+        if self.is_capturing and not self.is_controlling:
             self.capture_text.set("Capture")
             self.cap.terminate()
             self.is_capturing = False
-        else:
+        elif not self.is_capturing and not self.is_controlling:
             self.is_capturing = True
             self.capture_text.set("Done")
             t = Thread(target=self.cap.run)
@@ -77,7 +76,7 @@ class Gui:
         self.spinbox = tk.Spinbox(self.popup, from_=1, to=sys.maxsize)
         self.spinbox.pack()
         run_button = tk.Button(self.popup,
-                               text="Run Job",
+                               text="Run Jobs",
                                command=self._run_jobs)
         run_button.pack()
         cancel_button = tk.Button(self.popup,
@@ -92,12 +91,13 @@ class Gui:
         self.is_controlling = True
         with open(self.window.filename, "r", encoding='utf-8') as f:
             events = Event.schema().load(json.load(f), many=True)
-            ctrlr = Controller(events)
+            ctrlr = Controller(events, self.controller_terminate)
             iterations = int(self.spinbox.get())
             t = Thread(target=ctrlr.run, args=[iterations])
             t.start()
-            t.join()
-            self.is_controlling = False
+
+    def controller_terminate(self):
+        self.is_controlling = False
 
     def run(self):
         """
