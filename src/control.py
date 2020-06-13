@@ -59,10 +59,12 @@ class Controller:
                     last_timestamp = event.timestamp
                 last_timestamp = self.events[0].timestamp
         except KeyboardInterrupt:
-            print("Terminating")
-            return
+            logging.info("Interrupt detected")
         finally:
-            self.terminate()
+            self.terminate_callback()
+
+def terminate():
+    logging.info("Terminating")
 
 
 if __name__ == "__main__":
@@ -70,6 +72,6 @@ if __name__ == "__main__":
 
         events = Event.schema().load(json.load(f), many=True)
 
-        c = Controller(events)
+        c = Controller(events, terminate)
 
         c.run()
