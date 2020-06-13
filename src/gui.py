@@ -67,6 +67,8 @@ class Gui:
         """
         Click handler for control button
         """
+        if self.is_capturing or self.is_controlling:
+            return
         self.window.filename = askopenfilename()
         self.popup = tk.Toplevel()
         self.popup.geometry(f"{POPUP_WIDTH}x{POPUP_HEIGHT}")
