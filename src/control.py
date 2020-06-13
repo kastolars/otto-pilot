@@ -10,6 +10,10 @@ logging.basicConfig(level=logging.INFO)
 class Controller:
 
     def __init__(self, events, terminate_callback):
+        """
+        The json events need to be pre-processed
+        in order to be collected into Event objects
+        """
         self.events = events
         self.terminate_callback = terminate_callback
         for event in self.events:
